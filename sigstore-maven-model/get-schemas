@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+version="0_0_1"
+schemas="src/main/resources/schema"
+
+find ../../sigstore -name "*v${version}_schema.json" -exec cp {} src/main/resources/schema \;
+
+cd ${schemas}
+
+for i in $(ls *.json); do
+  name="$(echo ${i} | sed 's/_.*$//').json"
+  mv ${i} ${name}
+done

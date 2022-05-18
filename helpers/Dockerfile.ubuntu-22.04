@@ -1,0 +1,4 @@
+FROM ubuntu:22.04
+LABEL maintainer "Jason van Zyl jvz@chainguard.dev"
+RUN apt update -y && apt install -y gnupg haveged
+ENTRYPOINT ["/bin/sh"]

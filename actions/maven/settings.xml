@@ -1,0 +1,22 @@
+<settings>
+  <servers>
+    <server>
+      <id>${env.MAVEN_RELEASE_SERVER_ID}</id>
+      <username>${env.MAVEN_RELEASE_SERVER_USERNAME}</username>
+      <password>${env.MAVEN_RELEASE_SERVER_PASSWORD}</password>
+    </server>
+    <server>
+      <id>${env.MAVEN_SNAPSHOT_SERVER_ID}</id>
+      <username>${env.MAVEN_SNAPSHOT_SERVER_USERNAME}</username>
+      <password>${env.MAVEN_SNAPSHOT_SERVER_PASSWORD}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>oss-release</id>
+      <properties>
+        <gpg.skip>true</gpg.skip>
+      </properties>
+    </profile>
+  </profiles>
+</settings>

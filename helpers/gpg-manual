@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+
+# This script will produce an independent standalone directory with a keypair using your version of gpg that
+# can be used in an automated test harness. The output has no personal information in it.
+
+gpgVersion="$(gpg --version | head -1 | sed -ne 's/[^0-9]*\(\([0-9]\.\)\{0,4\}[0-9][^.]\).*/\1/p')"
+os="$(uname)"
+arch="$(uname -m)"
+
+if [ "${os}" = "Darwin" ]; then
+  osVersion="$(sw_vers | grep ProductVersion | sed -e 's/ProductVersion:.//')"
+elif [ "${os}" = "Linux" ]; then
+  if [ -f /etc/os-release ]; then
+    echo "We found /etc/os-release ..."
+    . /etc/os-release
+    # Alpine -> ${NAME} = Alpine-Linux
+    # Ubunut -> ${NAME} = Ubuntu
+    os="$(echo ${NAME} | sed -e 's/ .*$//')-${os}"
+    osVersion="${VERSION_ID}"
+  fi
+fi
+
+gpgHome="$(pwd)/gpg-${gpgVersion}-${os}-${osVersion}-${arch}"
+echo ${gpgHome}
+
+[ -d ${gpgHome} ] && rm -rf ${gpgHome}
+mkdir -p ${gpgHome}
+cd ${gpgHome}
+
+cd ~/.gnupg
+echo "sigstore" > .jpgp.passphrase
+# Remove the home directory reference
+gpg --version | sed 's/^Home.*$//' > gpg.version
+eval $(gpg-agent --daemon)
+gpg --generate-key
+gpg --output public-key.asc --armor --export tester@sigstore.dev
+gpg --armor --output private-key.asc --export-secret-keys tester@sigstore.dev
+gpg --list-secret-keys --keyid-format=long

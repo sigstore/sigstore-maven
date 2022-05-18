@@ -1,0 +1,183 @@
+name: "Maven Release Action"
+description: "Perform a Maven release"
+inputs:
+  workingDirectory:
+    description: "Working directory for an action"
+    required: false
+    default: "${{ github.workspace }}"
+  mavenBinary:
+    description: "Maven binary location to invoke"
+    required: false
+    default: "${{ github.workspace }}/mvnw"
+  mavenProjectPom:
+    description: "Maven root project POM"
+    required: false
+    default: "${{ github.workspace }}/pom.xml"
+  releaseBranchName:
+    description: "Release branch"
+    required: false
+  gitUserName:
+    description: 'GitHub user name'
+    required: true
+  gitUserEmail:
+    description: 'GitHub user email'
+    required: true
+  mavenReleaseSettingsXml:
+    description: "Maven settings.xml to use for the release"
+    required: false
+    default: "${{ github.workspace }}/settings.xml"
+  mavenReleaseServerId:
+    description: "Server id of the release repository"
+    required: true
+  mavenReleaseServerUsername:
+    description: "Username required to access the release repository"
+    required: true
+  mavenReleaseServerPassword:
+    description: "Password required to access the release repository"
+    required: true
+  mavenSnapshotServerId:
+    description: "Server id of the snapshot repository"
+    required: true
+  mavenSnapshotServerUsername:
+    description: "Username required to access the snapshot repository"
+    required: true
+  mavenSnapshotServerPassword:
+    description: "Password required to access the snapshot repository"
+    required: true
+  mavenReleaseArguments:  # id of input
+    description: 'Arguments for Maven release'
+    required: false
+  releasePluginArguments:
+    description: 'Arguments for Maven Release Plugin'
+    required: false
+  mavenReleaseExecutePerform:
+    description: 'Execute maven release:perform'
+    required: false
+    default: "true"
+  mavenReleasePushCommits:
+    description: "After a successful release:perform push release commits"
+    required: false
+    default: "true"
+  mavenReleaseExecutePostScripts:
+    description: "After a successful release:perform execute post scripts"
+    required: false
+    default: "true"
+  mavenReleaseExecutePreScripts:
+    description: "Execute pre scripts before release:prepare"
+    required: false
+    default: "true"
+  mavenPostScripts:
+    description: "Post scripts location"
+    required: false
+    default: "${{ github.workspace }}/.mvn/release/post"
+  mavenPreScripts:
+    description: "Pre scripts location"
+    required: false
+    default: "${{ github.workspace }}/.mvn/release/pre"
+  mavenReleaseTag:
+    description: "Tag to create for released version"
+    required: false
+    default: ""
+  mavenReleaseVersion:
+    description: "Release version"
+    required: false
+    default: ""
+  mavenNextDevelopmentVersion:
+    description: "Next development version"
+    required: false
+    default: ""
+  traceEnabled:
+    description: "Enable tracing executing of scripts"
+    required: false
+    default: "false"
+
+outputs:
+  prepared:
+    description: "Release was prepared"
+    value: ${{ steps.prepare.outputs.executed }}
+  performed:
+    description: "Release was performed"
+    value: ${{ steps.perform.outputs.executed }}
+  pushed:
+    description: "Commits and tags were pushed"
+    value: ${{ steps.push.outputs.executed }}
+  pre:
+    description: "Pre actions were executed"
+    value: ${{ steps.pre.outputs.executed }}
+  post:
+    description: "Post actions were executed"
+    value: ${{ steps.post.outputs.executed }}
+  version:
+    description: "Released version"
+    value: ${{ steps.version.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set environment variables
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+      run: |
+        cat <<EOF >> $GITHUB_ENV
+        RELEASE_POST_SCRIPTS=${{ inputs.mavenPostScripts }}
+        RELEASE_PRE_SCRIPTS=${{ inputs.mavenPreScripts }}
+        MAVEN_BIN=${{ inputs.mavenBinary }}
+        MAVEN_PROJECT_POM=${{ inputs.mavenProjectPom }}
+        RELEASE_BRANCH_NAME=${{ inputs.releaseBranchName }}
+        MAVEN_RELEASE_SETTINGS_XML=${{ inputs.mavenReleaseSettingsXml }}
+        MAVEN_RELEASE_SERVER_ID=${{ inputs.mavenReleaseServerId }}
+        MAVEN_RELEASE_SERVER_USERNAME=${{ inputs.mavenReleaseServerUsername }}
+        MAVEN_RELEASE_SERVER_PASSWORD=${{ inputs.mavenReleaseServerPassword }}
+        MAVEN_SNAPSHOT_SERVER_ID=${{ inputs.mavenSnapshotServerId }}
+        MAVEN_SNAPSHOT_SERVER_USERNAME=${{ inputs.mavenSnapshotServerUsername }}
+        MAVEN_SNAPSHOT_SERVER_PASSWORD=${{ inputs.mavenSnapshotServerPassword }}
+        MAVEN_RELEASE_EXECUTE_PERFORM=${{ inputs.mavenReleaseExecutePerform }}
+        MAVEN_RELEASE_PUSH_COMMITS=${{ inputs.mavenReleasePushCommits }}
+        MAVEN_RELEASE_EXECUTE_POST_SCRIPTS=${{ inputs.mavenReleaseExecutePostScripts }}
+        MAVEN_RELEASE_EXECUTE_PRE_SCRIPTS=${{ inputs.mavenReleaseExecutePreScripts }}
+        MAVEN_RELEASE_ARGUMENTS=${{ inputs.mavenReleaseArguments }}
+        RELEASE_ARGUMENTS=${{ inputs.releasePluginArguments }}
+        GIT_USER_NAME=${{ inputs.gitUserName }}
+        GIT_USER_EMAIL=${{ inputs.gitUserEmail }}
+        MAVEN_RELEASE_TAG=${{ inputs.mavenReleaseTag }}
+        MAVEN_RELEASE_VERSION=${{ inputs.mavenReleaseVersion }}
+        MAVEN_NEXT_DEVELOPMENT_VERSION=${{ inputs.mavenNextDevelopmentVersion }}
+        TRACE_ENABLED=${{ inputs.traceEnabled }}
+        EOF
+    - name: "Set GIT automation credentials"
+      run: git config --global user.name "${{ inputs.gitUserName }}" && git config --global user.email "${{ inputs.gitUserEmail }}"
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Export release version"
+      id: version
+      run: ${{ github.action_path }}/export_version.sh
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Check release prerequisites"
+      run: ${{ github.action_path }}/check.sh
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Run pre actions"
+      run: ${{ github.action_path }}/pre.sh ${{ inputs.mavenReleaseArguments }}
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Prepare release"
+      id: prepare
+      run: ${{ github.action_path }}/prepare.sh ${{ inputs.mavenReleaseArguments }}
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Perform release"
+      id: perform
+      run: ${{ github.action_path }}/perform.sh ${{ inputs.mavenReleaseArguments }}
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Run post actions"
+      id: post
+      run: ${{ github.action_path }}/post.sh ${{ inputs.mavenReleaseArguments }}
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"
+    - name: "Push commits and tags"
+      id: push
+      run: ${{ github.action_path }}/push.sh ${{ inputs.mavenReleaseArguments }}
+      shell: bash
+      working-directory: "${{ inputs.workingDirectory }}"

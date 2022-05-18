@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+version=$1
+docker build -f Dockerfile.${version} -t sigstore.dev/gpg-${version} .
+docker run -it -v $(pwd):/output sigstore.dev/gpg-${version}

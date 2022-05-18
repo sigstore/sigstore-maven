@@ -1,0 +1,14 @@
+target/
+.project
+.classpath
+.settings/
+.idea
+*.iml
+*.ipr
+*.iws
+bin/
+.DS_Store
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml

@@ -1,0 +1,29 @@
+This is a revocation certificate for the OpenPGP key:
+
+pub   rsa1024 2022-05-14 [SC]
+      36FE8B0567E34273FE1B26508CCEDD7DC9D14C3E
+uid          Sigstore PGP Tester (Test PGP Homedir) <tester@sigstore.dev>
+
+A revocation certificate is a kind of "kill switch" to publicly
+declare that a key shall not anymore be used.  It is not possible
+to retract such a revocation certificate once it has been published.
+
+Use it to revoke this key in case of a compromise or loss of
+the secret key.  However, if the secret key is still accessible,
+it is better to generate a new revocation certificate and give
+a reason for the revocation.  For details see the description of
+of the gpg command "--generate-revocation" in the GnuPG manual.
+
+To avoid an accidental use of this file, a colon has been inserted
+before the 5 dashes below.  Remove this colon with a text editor
+before importing and publishing this revocation certificate.
+
+:-----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: This is a revocation certificate
+
+iLYEIAEKACAWIQQ2/osFZ+NCc/4bJlCMzt19ydFMPgUCYn/JRQIdAAAKCRCMzt19
+ydFMPiNuA/4kQ9TF5tRHpIRlYWG4Ikf/nCsDCR3Qcc64bGxzCdxlJXns2qtbiP+n
+SL0REyW63U4pALytUSiRCCSxFpjHTPVhOn4A8yvFXfvnGVDmTuQR1J0LX2ZX13xU
+SX84yxepTA1VdFIAW3lwf3O1neE19z1LUQtVFx1NJVyPYZopSAMb3Q==
+=Cfh+
+-----END PGP PUBLIC KEY BLOCK-----
