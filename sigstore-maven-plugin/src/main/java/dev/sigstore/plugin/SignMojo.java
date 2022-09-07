@@ -25,8 +25,6 @@ import static java.nio.file.Files.createDirectories;
 import dev.sigstore.SigstoreRequest;
 import dev.sigstore.SigstoreResult;
 import dev.sigstore.SigstoreSigner;
-import dev.sigstore.pgp.ImmutablePgpSigningRequest;
-import dev.sigstore.pgp.PgpSigner;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,7 +47,6 @@ import org.slf4j.LoggerFactory;
 @Mojo(name = "sign", threadSafe = true)
 public class SignMojo extends AbstractMojo {
 
-  public static final String PGP_SIGNATURE_EXTENSION = ".asc";
   public static final String X509_SIGNATURE_EXTENSION = ".sig";
   public static final String X509_CERTIFICATE_EXTENSION = ".pem";
 
@@ -64,25 +61,6 @@ public class SignMojo extends AbstractMojo {
   public SignMojo(MavenProjectHelper projectHelper) {
     this.projectHelper = projectHelper;
   }
-
-  // ---------------------------------------------------------------------------
-  // Modes
-  // ---------------------------------------------------------------------------
-  //
-  // sigstore x509 signatures only
-  // standard maven pgp signatures with sigstore x509 signatures
-  // standard maven pgp signatures with sigstore SSH signatures
-  //
-
-  // ---------------------------------------------------------------------------
-  // PGP
-  // ---------------------------------------------------------------------------
-
-  @Parameter(property = "mavenPgpSignatures")
-  private boolean mavenPgpSignatures;
-
-  @Parameter(property = "pgpPassphrase")
-  private String pgpPassphrase;
 
   // ---------------------------------------------------------------------------
   // Sigstore
@@ -162,14 +140,6 @@ public class SignMojo extends AbstractMojo {
 
   @Override
   public void execute() throws MojoExecutionException {
-    // TODO:
-    // - signingKeyId
-    // - envar config
-    // - file config
-    PgpSigner pgpArtifactSigner = new PgpSigner(
-        ImmutablePgpSigningRequest.builder()
-            .build());
-
     List<SignedFile> mavenFilesToSign = new ArrayList<>();
     if (!"pom".equals(project.getPackaging())) {
       //
@@ -243,48 +213,5 @@ public class SignMojo extends AbstractMojo {
         throw new MojoExecutionException(format("Error signing Maven file %s with Sigstore.", mavenFileToSign), e);
       }
     }
-
-    // maven-sigstore-test-{{version}}.jar
-    // maven-sigstore-test-{{version}}.jar.sig
-    // maven-sigstore-test-{{version}}.jar.pem
-    // maven-sigstore-test-{{version}}.pom
-    // maven-sigstore-test-{{version}}.pom.sig
-    // maven-sigstore-test-{{version}}.pom.pem
-    // maven-sigstore-test-{{version}}-sources.jar
-    // maven-sigstore-test-{{version}}-sources.jar.sig
-    // maven-sigstore-test-{{version}}-sources.jar.pem
-
-    logger.debug("Signing the following files with PGP:");
-    filesToSignWithPgp.forEach(s -> logger.debug(s.toString()));
-    for (SignedFile pgpSignedFile : filesToSignWithPgp) {
-      Path file = pgpSignedFile.file();
-      if (mavenPgpSignatures) {
-        try {
-          File pgpSignature = pgpArtifactSigner.sign(file.toFile());
-          projectHelper.attachArtifact(project, pgpSignedFile.extension() + PGP_SIGNATURE_EXTENSION, pgpSignedFile.classifier(), pgpSignature);
-        } catch (Exception e) {
-          throw new MojoExecutionException("Error signing artifact " + file + ".", e);
-        }
-      }
-    }
-
-    // maven-sigstore-test-{{version}}.jar
-    // maven-sigstore-test-{{version}}.jar.asc
-    // maven-sigstore-test-{{version}}.jar.sig
-    // maven-sigstore-test-{{version}}.jar.sig.asc
-    // maven-sigstore-test-{{version}}.jar.pem
-    // maven-sigstore-test-{{version}}.jar.pem.asc
-    // maven-sigstore-test-{{version}}.pom
-    // maven-sigstore-test-{{version}}.pom.asc
-    // maven-sigstore-test-{{version}}.pom.sig
-    // maven-sigstore-test-{{version}}.pom.sig.asc
-    // maven-sigstore-test-{{version}}.pom.pem
-    // maven-sigstore-test-{{version}}.pom.pem.asc
-    // maven-sigstore-test-{{version}}-sources.jar
-    // maven-sigstore-test-{{version}}-sources.jar.asc
-    // maven-sigstore-test-{{version}}-sources.jar.sig
-    // maven-sigstore-test-{{version}}-sources.jar.sig.asc
-    // maven-sigstore-test-{{version}}-sources.jar.pem
-    // maven-sigstore-test-{{version}}-sources.jar.pem.asc
   }
 }
