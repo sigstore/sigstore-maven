@@ -118,9 +118,6 @@ public abstract class SigstoreProcessorSupport implements SigstoreProcessor {
     if (type.equals(Type.X_509)) {
       return Format.X_509;
     }
-    if (type.equals(Type.SSH)) {
-      return Format.SSH;
-    }
     throw new IllegalArgumentException("Unsupported type " + type);
   }
 }

@@ -17,7 +17,6 @@ package dev.sigstore;
 //
 
 import static dev.sigstore.ImmutableSigstoreResult.builder;
-import static dev.sigstore.SigstoreRequest.Type.SSH;
 import static dev.sigstore.SigstoreRequest.Type.X_509;
 import static java.lang.String.format;
 
@@ -30,7 +29,6 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.apache.v2.ApacheHttpTransport;
 import dev.sigstore.ImmutableSigstoreResult.Builder;
-import dev.sigstore.ssh.SshProcessor;
 import dev.sigstore.x509.FulcioProcessor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -110,9 +108,7 @@ public class SigstoreSigner {
     SigstoreProcessor processor = new FulcioProcessor();
     if (request.type().equals(X_509)) {
       processor = new FulcioProcessor();
-    } else if (request.type().equals(SSH)) {
-      processor = new SshProcessor();
-    }
+    } 
     SigstoreResult result = processor.process(request);
     result = submitRecordToRekor(request, result);
     LOGGER.info(format("Created entry in transparency log for %s @ '%s'", request.artifact().getFileName().toString(), result.rekorEntryUrl()));

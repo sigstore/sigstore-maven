@@ -16,7 +16,6 @@ package dev.sigstore;
 // limitations under the License.
 //
 
-import dev.sigstore.ssh.SshRequest;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.cert.CertPath;
@@ -110,15 +109,9 @@ public abstract class SigstoreRequest {
     return "https://rekor.sigstore.dev/api/v1/timestamp";
   }
 
-  // SSH
-  @Nullable
-  public abstract SshRequest sshRequest();
-
   public enum Type {
-    X_509("x509"),
-    SSH("ssh");
+    X_509("x509");
     private final String value;
-
     Type(String value) {
       this.value = value;
     }
