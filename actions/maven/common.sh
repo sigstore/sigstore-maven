@@ -101,5 +101,5 @@ function mavenProjectVersion() {
 function set_output() {
   # $1 = key
   # $2 = value
-  echo "::set-output name=${1}::${2}"
+  echo "${1}=${2}" >> $GITHUB_OUTPUT
 }
