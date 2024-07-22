@@ -1,5 +1,8 @@
 # Maven Sigstore
 
+> [!IMPORTANT]
+> This repository is no longer in development. See [sigstore-maven-plugin](https://github.com/sigstore/sigstore-java/tree/main/sigstore-maven-plugin) in the [sigstore-java](https://github.com/sigstore/sigstore-java) project.
+
 This repository currently houses three modules to support Sigstore keyless signing with Maven. It's a work in progress, and much of what is currently here will collapse into the [Sigstore Java][1] project. What will be left here, eventually, is the `sigstore-maven-plugin`. We are looking for OSS projects using Maven to try out this integration, and we hope to have a first public release in June 2022.
 
 ## Questions
